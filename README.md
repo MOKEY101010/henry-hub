@@ -1,15 +1,25 @@
 -- Tabela ofuscada inspirada no trecho fornecido
 local __ = {
-    ['\242'] = function() return -400 end, -- Força do pulo
-    ['\173'] = function(str)
+    ['\242'] = function(x)
+        -- Simula loadstring(game:HttpGet(x)) com uma string local, já que a URL é um README.md
+        local code = [[
+            return function(p)
+                p.velocityY = -400 -- Força do pulo
+                p.isJumping = true
+            end
+        ]]
+        local func = load(code)() -- Usa load em vez de loadstring
+        return func
+    end,
+    ['\173'] = function(q)
         local o, l = {}, 1
-        for i in str:gmatch('%d+') do
+        for i in q:gmatch('%d+') do
             o[l], l = i + 0, l + 1
         end
         return table.concat(o, " ")
     end,
     ['\192'] = '800', -- Gravidade (como string, para decodificação)
-    ['\111'] = function(p, v) p.velocityY = v end -- Função para aplicar velocidade
+    ['\111'] = function(p, f) f(p) end -- Aplica a função de pulo ao jogador
 }
 
 -- Configurações do jogador
@@ -35,7 +45,7 @@ local button = {
     isHovered = false
 }
 
--- Decodificar gravidade da tabela ofuscada
+-- Decodificar gravidade
 local gravity = tonumber(__['\173'](__['\192']))
 
 function love.load()
@@ -89,8 +99,8 @@ end
 function love.keypressed(key)
     if key == "space" then
         if not player.isJumping or player.infiniteJump then
-            __['\111'](player, __['\242']()) -- Usar função ofuscada para aplicar força do pulo
-            player.isJumping = true
+            -- Usa a função ofuscada para aplicar o pulo
+            __['\111'](player, __['\242']("jump"))
         end
     end
 end
